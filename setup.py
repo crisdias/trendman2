@@ -4,7 +4,6 @@ import json
 
 
 def setup(import_data = False):
-
     # Connect or create the database
     conn = sqlite3.connect('./data/trendman.db')
     # Create a cursor

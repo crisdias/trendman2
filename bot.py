@@ -8,7 +8,7 @@ import requests
 from dotenv   import load_dotenv
 from datetime import datetime
 from mastodon import get_all_data
-from utils    import pp
+from utils    import pp, array_from_file
 from setup    import setup
 
 load_dotenv()
@@ -34,13 +34,9 @@ conn = sqlite3.connect('./data/trendman.db')
 cursor = conn.cursor()
 
 def run_loop():
-    with open('./data/sources.json') as f:
-        sources = json.load(f)
-
-    with open('./data/ignore.json') as f:
-        ignored_domains = json.load(f)
-
-    sent_links = 0
+    sources         = array_from_file('./data/sources.json')
+    ignored_domains = array_from_file('./data/ignore.json')
+    sent_links      = 0
 
     for source in sources:
         print(f'Source: {source}')

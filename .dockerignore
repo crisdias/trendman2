@@ -1,0 +1,7 @@
+.gitignore
+README.md
+__pycache__
+bin
+lib
+pyenv.cfg
+data/trendman.db
