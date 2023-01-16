@@ -66,8 +66,8 @@ def run_loop():
                                 VALUES(?, ?, ?, ?)''', (url, source_domain, '', datetime.now()))
                 conn.commit()
 
-        # send url to telegram
-        requests.get(f'https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHATID}&text={url}')
+                # send url to telegram
+                requests.get(f'https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHATID}&text={url}')
 
 # run the loop infinitely, wait WAIT minutes between each run
 while True:
