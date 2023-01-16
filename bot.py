@@ -39,7 +39,7 @@ def run_loop():
     sent_links      = 0
 
     for source in sources:
-        print(f'Source: {source}')
+        print(f'\n\n*** Source: {source}')
         source_domain = source.split('/')[2]
         data = get_all_data(source, 20)
 
