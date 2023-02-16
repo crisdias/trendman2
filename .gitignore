@@ -4,3 +4,4 @@ bin
 data
 lib
 __pycache__
+nltk_data

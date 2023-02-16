@@ -1,8 +1,9 @@
 import json
 import os
+import pprint
 
 def pp(data):
-    json.dumps(data, indent=4)
+    pprint.pprint(data)
 
 def array_from_file(path):
     if os.path.exists(path):
