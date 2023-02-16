@@ -5,3 +5,5 @@ data
 lib
 __pycache__
 nltk_data
+trendman2.code-workspace
+.cache
