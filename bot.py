@@ -29,14 +29,15 @@ def handle_exit():
 
 def run_loop():
     
-    sent_links      = 0
+    sent_links = 0
 
     for source in config['text']['sources']:
         print(f'\n\n*** Source: {source}')
         source_domain = source.split('/')[2]
-        data = get_all_data(source, 20)
+        data = get_all_data(source, 20, config['text']['max_items_per_source'])
 
         print(f'Rows: {len(data)}')
+        exit()
 
         for row in data:
             url = row['url']

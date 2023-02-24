@@ -1,19 +1,12 @@
 import requests
-# import json
 
-
-def get_all_data(url, limit):
+def get_all_data(url, items_per_page=20, max_items=None):
     offset = 0
-
-    # grabs first page only, too much info these days
-    response = requests.get(url, params={'limit': limit, 'offset': offset})
-    return response.json()
-    
-
     data = []
+    
     while True:
         # Call the API with the current offset and limit
-        response = requests.get(url, params={'limit': limit, 'offset': offset})
+        response = requests.get(url, params={'limit': items_per_page, 'offset': offset})
         response_data = response.json()
 
         # If there are no more records, break out of the loop
@@ -23,6 +16,15 @@ def get_all_data(url, limit):
         # Append the data to the data variable
         data.extend(response_data)
 
+        # If the maximum number of items has been reached, break out of the loop
+        if max_items is not None and len(data) >= max_items:
+            break
+
         # Update the offset for the next API call
-        offset += limit
+        offset += items_per_page
+
+    # Trim the data array to match the maximum number of items requested
+    if max_items is not None and len(data) > max_items:
+        data = data[:max_items]
+
     return data

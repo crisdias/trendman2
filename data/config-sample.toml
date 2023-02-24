@@ -14,6 +14,8 @@ sources = [
     "https://ursal.zone/api/v1/trends/links"
 ]
 
+max_items_per_source = 20
+
 ignored_domains = [
     "nature.com",
     "wsj.com"
