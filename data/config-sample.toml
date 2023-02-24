@@ -1,0 +1,20 @@
+[server]
+telegram_token    = "xxxxxxxxxx:yyyyyy"
+telegram_chatid   = 555
+maxlinks_per_run  = 5
+wait_between_runs = 15
+database_path     = "./data/trendman.db"
+
+development = true
+
+[text]
+allowed_languages = ["english", "portuguese", "spanish", "error"]
+
+sources = [ 
+    "https://ursal.zone/api/v1/trends/links"
+]
+
+ignored_domains = [
+    "nature.com",
+    "wsj.com"
+]

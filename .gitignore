@@ -1,7 +1,8 @@
 # created by virtualenv automatically
 .env
 bin
-data
+data/*
+!data/config-sample.toml
 lib
 __pycache__
 nltk_data
