@@ -11,3 +11,9 @@ def array_from_file(path):
             return json.load(f)
     else:
         return []
+
+def load_config():
+    import toml
+
+    with open('./data/config.toml', 'r') as f:
+        return toml.load(f)

@@ -62,6 +62,9 @@ def clear_cache_data(age_days=7):
 
 def get_article_contents(url):
     html = read_article_from_url(url)
+    if not html:
+        return False
+    
     soup = BeautifulSoup(html, 'html.parser')
     article = ''
     for element in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
@@ -122,6 +125,7 @@ def read_article_from_url(url):
                 return contents
             except requests.exceptions.HTTPError as e:
                 print(f"Error retrieving article from {url}: {e}")
+                return False
 
 
 def detect_language(article):
@@ -160,6 +164,14 @@ def detect_language(article):
     language_code = detect(article)
     language = LANGUAGE_MAP.get(language_code)
     return language
+
+def detect_language_from_url(url):
+    article = get_article_contents(url)
+    if not article:
+        return 'error'
+    
+    lang = detect_language(article)
+    return lang
 
 def preprocess_text(text):
     # Convert text to lowercase

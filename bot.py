@@ -5,18 +5,19 @@ import time
 import atexit
 import requests
 
-from dotenv   import load_dotenv
-from datetime import datetime
-from mastodon import get_all_data
-from utils    import pp, array_from_file
-from setup    import setup
+from dotenv       import load_dotenv
+from datetime     import datetime
+from mastodon     import get_all_data
+from utils        import pp, array_from_file, load_config
+from setup        import setup
+from article_info import detect_language_from_url
+
 
 from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 
 import caribou
-
-
+import toml
 
 
 def handle_exit():
@@ -24,12 +25,13 @@ def handle_exit():
     conn.close()
     print("Bye!")
 
+
+
 def run_loop():
-    sources         = array_from_file('./data/sources.json')
-    ignored_domains = array_from_file('./data/ignore.json')
+    
     sent_links      = 0
 
-    for source in sources:
+    for source in config['text']['sources']:
         print(f'\n\n*** Source: {source}')
         source_domain = source.split('/')[2]
         data = get_all_data(source, 20)
@@ -42,13 +44,16 @@ def run_loop():
             url_domain = url_domain.replace('www.', '')
 
             # if url is in ignore.json
-            if url_domain in ignored_domains:
+            if url_domain in config['text']['ignored_domains']:
                 continue
-
 
             cursor.execute('''SELECT * FROM processed WHERE url = ?''', (url,))
             # if url is not in processed
             if cursor.fetchone() is None:
+                lang = detect_language_from_url(url)
+                if lang not in config['text']['allowed_languages']:
+                    continue
+
                 sent_links += 1
                 if sent_links > MAXLINKS:
                     break
@@ -58,7 +63,10 @@ def run_loop():
                 conn.commit()
 
                 # send url to telegram
-                # requests.get(f'https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHATID}&text={url}')
+                if config['server']['development']:
+                    print(f'\n\n** Fake-sending: {url}\n\n')
+                else:
+                    requests.get(f'https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHATID}&text={url}')
 
 
 def telegram_react(update: Update, context: CallbackContext):
@@ -75,6 +83,7 @@ def telegram_react(update: Update, context: CallbackContext):
 
 
 def setup_telegram(token):
+    return 
     # Initialize the bot and add handlers
     updater = Update(token, use_context=True)
     dispatcher = updater.dispatcher
@@ -92,19 +101,21 @@ def setup_telegram(token):
 
 
 
+config = load_config()
+
 
 load_dotenv()
-TOKEN    = os.getenv("TOKEN")
-CHATID   = os.getenv("CHATID")
-MAXLINKS = int(os.getenv("MAXLINKS"))
-WAIT     = int(os.getenv("WAIT"))
+TOKEN    = config['server']["telegram_token"]
+CHATID   = config['server']["telegram_chatid"]
+MAXLINKS = int(config['server']["maxlinks_per_run"])
+WAIT     = int(config['server']["wait_between_runs"])
 
 setup_telegram(TOKEN)
 
 atexit.register(handle_exit)
 
 # check if data/trendman.db exists, if not call setup()
-db_path = './data/trendman.db'
+db_path = config['server']['database_path']
 if not os.path.exists(db_path):
     print('Setting up database')
     setup( import_data = True )
@@ -116,13 +127,8 @@ migrations_path = './migrations'
 # upgrade to most recent version
 caribou.upgrade(db_path, migrations_path)
 
-# upgrade to a specific version
-caribou.upgrade(db_path, migrations_path)
 
-# downgrade to a specific version
-caribou.downgrade(db_path, migrations_path)
-
-conn = sqlite3.connect('./data/trendman.db')
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 

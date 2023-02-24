@@ -8,4 +8,5 @@ numpy==1.24.2
 scikit-learn==1.2.1
 caribou==0.3.0
 python-telegram-bot==20.1
+toml==0.10.2
 # 
