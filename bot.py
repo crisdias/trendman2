@@ -10,14 +10,13 @@ from datetime     import datetime
 from mastodon     import get_all_data
 from utils        import pp, array_from_file, load_config
 from setup        import setup
-from article_info import detect_language_from_url
+from article_info import detect_language_from_url, check_blocked_words
 
 
 from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 
 import caribou
-import toml
 
 
 def handle_exit():
@@ -37,9 +36,9 @@ def run_loop():
         data = get_all_data(source, 20, config['text']['max_items_per_source'])
 
         print(f'Rows: {len(data)}')
-        exit()
 
         for row in data:
+            print('\n\n\n---------------')
             url = row['url']
             url_domain = url.split('/')[2]
             url_domain = url_domain.replace('www.', '')
@@ -51,22 +50,28 @@ def run_loop():
             cursor.execute('''SELECT * FROM processed WHERE url = ?''', (url,))
             # if url is not in processed
             if cursor.fetchone() is None:
+                if not check_blocked_words(url, config['text']['blocked_words']):
+                    if config['server']['development']:
+                        print(f'\n\n** BLOCKED: {url}\n\n')
+                    continue
+
                 lang = detect_language_from_url(url)
                 if lang not in config['text']['allowed_languages']:
+                    print('\n\n\n\nSKIP\n\n\n\n')
                     continue
 
                 sent_links += 1
                 if sent_links > MAXLINKS:
                     break
-                print(url)
-                cursor.execute('''INSERT INTO processed(url, first_source, language, date_created)
-                                VALUES(?, ?, ?, ?)''', (url, source_domain, '', datetime.now()))
-                conn.commit()
+                print(f'URL --> {url}')
 
                 # send url to telegram
                 if config['server']['development']:
                     print(f'\n\n** Fake-sending: {url}\n\n')
                 else:
+                    cursor.execute('''INSERT INTO processed(url, first_source, language, date_created)
+                                VALUES(?, ?, ?, ?)''', (url, source_domain, '', datetime.now()))
+                    conn.commit()
                     requests.get(f'https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHATID}&text={url}')
 
 
@@ -105,11 +110,12 @@ def setup_telegram(token):
 config = load_config()
 
 
-load_dotenv()
+# load_dotenv()
 TOKEN    = config['server']["telegram_token"]
 CHATID   = config['server']["telegram_chatid"]
 MAXLINKS = int(config['server']["maxlinks_per_run"])
 WAIT     = int(config['server']["wait_between_runs"])
+
 
 setup_telegram(TOKEN)
 

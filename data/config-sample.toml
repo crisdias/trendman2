@@ -20,3 +20,10 @@ ignored_domains = [
     "nature.com",
     "wsj.com"
 ]
+
+blocked_words = [
+    "desantis",
+    "republicans",
+    "democrats",
+    "trump",
+]

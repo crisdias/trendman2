@@ -60,12 +60,42 @@ def clear_cache_data(age_days=7):
         if age > age_days * 86400:
             os.remove(filepath)
 
+def check_blocked_words(url, blocked_words):
+    title = get_article_title(url)
+    if not title:
+        return True
+
+    print(f'TITLE ==> {title}')
+    
+    for word in blocked_words:
+        if word.lower() in title.lower():
+            return False
+            
+    return True
+
+
+
+def get_article_title(url):
+    html = read_article_from_url(url)
+    if not html:
+        return False
+    
+    soup = BeautifulSoup(html, 'html.parser')
+
+    title = soup.title.text if soup.title else ''
+    h1_tags = [h1.text for h1 in soup.find_all('h1')]
+    title += ' | ' + ' | '.join(h1_tags)
+
+    return title
+
+
 def get_article_contents(url):
     html = read_article_from_url(url)
     if not html:
         return False
     
     soup = BeautifulSoup(html, 'html.parser')
+
     article = ''
     for element in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']):
         article += element.text + '\n'
@@ -268,7 +298,6 @@ def test_data(good_articles, bad_articles):
     print(f"confusion_matrix:\n{cm}")
 
     return accuracy
-
 
 
 
